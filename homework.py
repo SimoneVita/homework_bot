@@ -30,7 +30,7 @@ logging.basicConfig(
 
 
 class CheckAPIError(Exception):
-    """Custom API Error."""
+    """Custom API Error.."""
     pass
 
 
