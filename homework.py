@@ -31,6 +31,7 @@ logging.basicConfig(
 
 class CheckAPIError(Exception):
     """Custom API Error."""
+
     pass
 
 
