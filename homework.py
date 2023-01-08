@@ -105,6 +105,7 @@ def parse_status(homework):
 def main():
     """Основная логика работы бота."""
     failure_msg = ''
+    success_msg = ''
     if not check_tokens():
         raise Exception('Variables error.')
     logging.debug('Tokens available.')
@@ -121,27 +122,17 @@ def main():
             homeworks = response.get('homeworks')
             homework = homeworks[0]
             logging.debug('List of works received')
-            if len(homework) > 0:
-                logging.debug('New homework')
-                upd_time = datetime.timestamp(
-                    datetime.strptime(homework.get('date_updated'),
-                                      '%Y-%m-%dT%H:%M:%SZ')
-                )
-                if int(upd_time) > timestamp:
-                    logging.debug('upd_time > timestamp')
-                    message = parse_status(homework)
-                    send_message(bot, message)
-                    timestamp = int(upd_time)
-                    failure_msg = ''
-                    logging.debug(f'timestamp 2: {timestamp}')
-                logging.debug('Same status, no msg has been sent.')
+            message = parse_status(homework)
+            if message != success_msg:
+                send_message(bot, message)
+                failure_msg = ''
+                success_msg = message
             logging.debug('No new homework')
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             if message != failure_msg:
                 send_message(bot, message)
                 failure_msg = message
-            logging.debug(f'timestamp 3: {timestamp}')
             logging.debug(f'failure_msg: {failure_msg}')
         finally:
             time.sleep(RETRY_PERIOD)
