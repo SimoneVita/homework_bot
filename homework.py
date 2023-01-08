@@ -5,14 +5,12 @@ from dotenv import load_dotenv
 import telegram
 import requests
 import time
-from datetime import datetime
 
 load_dotenv()
 
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-CURRENT_DATE = 1549962000 - 30
 
 RETRY_PERIOD = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
@@ -27,12 +25,6 @@ HOMEWORK_VERDICTS = {
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
-
-
-class CheckAPIError(Exception):
-    """Custom API Error."""
-
-    pass
 
 
 def check_tokens():
@@ -99,7 +91,7 @@ def parse_status(homework):
         logging.error(f'Unknown status: {status}.')
         raise ValueError
     verdict = HOMEWORK_VERDICTS[status]
-    return (f'Изменился статус проверки работы "{homework_name}". {verdict}')
+    return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
 def main():
