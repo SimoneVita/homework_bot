@@ -29,11 +29,10 @@ logging.basicConfig(
 
 def check_tokens():
     """Проверка доступности переменных окружения."""
-    if (PRACTICUM_TOKEN and TELEGRAM_TOKEN and TELEGRAM_CHAT_ID
-            and RETRY_PERIOD and ENDPOINT and HEADERS and HOMEWORK_VERDICTS):
+    if all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID,
+            RETRY_PERIOD, ENDPOINT, HEADERS, HOMEWORK_VERDICTS]):
         return True
     logging.critical('The app has been stopped, check tokens')
-    return False
 
 
 def send_message(bot, message):
@@ -42,9 +41,11 @@ def send_message(bot, message):
         bot.send_message(TELEGRAM_CHAT_ID, message)
         log_info = f'Message has been sent: {message}'
         logging.debug(log_info)
+        return message
     except Exception as error:
         log_info = f'Message has NOT been sent: {error}'
         logging.error(log_info)
+        return log_info
 
 
 def get_api_answer(timestamp):
@@ -67,10 +68,20 @@ def get_api_answer(timestamp):
 def check_response(response):
     """Проверка ответа API на соответствие документации."""
     if not isinstance(response, dict):
+        logging.error(f'TypeError has occured: '
+                      f'response is not dict.'
+                      f'response: {response}.')
         raise TypeError
     if 'homeworks' not in response or 'current_date' not in response:
+        logging.error(f'KeyError has occured: '
+                      f'no homeworks or current_date in response.'
+                      f'response: {response}.')
         raise KeyError
     if not isinstance(response.get('homeworks'), list):
+        homeworks = response.get('homeworks')
+        logging.error(f'TypeError has occured: '
+                      f'homeworks is not list.'
+                      f'homeworks: {homeworks}.')
         raise TypeError
     return True
 
@@ -116,16 +127,16 @@ def main():
             logging.debug('List of works received')
             message = parse_status(homework)
             if message != success_msg:
-                send_message(bot, message)
+                result = send_message(bot, message)
                 failure_msg = ''
-                success_msg = message
-            logging.debug('No new homework')
+                success_msg = result
+                logging.debug(f'Final report: {success_msg}')
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             if message != failure_msg:
                 send_message(bot, message)
                 failure_msg = message
-            logging.debug(f'failure_msg: {failure_msg}')
+            logging.error(f'failure_msg: {failure_msg}')
         finally:
             time.sleep(RETRY_PERIOD)
 
